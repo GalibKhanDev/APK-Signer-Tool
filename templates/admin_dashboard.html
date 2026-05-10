@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .sidebar {
+            min-height: 100vh;
+            background-color: #343a40;
+            color: white;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,.75);
+        }
+        .sidebar .nav-link:hover {
+            color: white;
+        }
+        .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255,255,255,.1);
+        }
+        .main-content {
+            padding: 20px;
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+        .activity-log {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .license-count {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 sidebar p-0">
+                <div class="p-3">
+                    <h4>Admin Panel</h4>
+                </div>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#licenses" data-bs-toggle="tab">
+                            <i class="bi bi-key me-2"></i>Licenses
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#activity" data-bs-toggle="tab">
+                            <i class="bi bi-list-check me-2"></i>Activity Log
+                        </a>
+                    </li>
+                    <li class="nav-item mt-auto">
+                        <a class="nav-link" href="{{ url_for('logout') }}">
+                            <i class="bi bi-box-arrow-left me-2"></i>Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Main content -->
+            <div class="col-md-10 main-content">
+                <div class="tab-content">
+                    <!-- Licenses Tab -->
+                    <div class="tab-pane active" id="licenses">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h2>License Management</h2>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addLicenseModal">
+                                <i class="bi bi-plus-circle"></i> Add License
+                            </button>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title">Active Licenses</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>License Key</th>
+                                                <th>Created</th>
+                                                <th>Last Used</th>
+                                                <th>APK Count</th>
+                                                <th>Remaining</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for key, data in licenses.items() %}
+                                            <tr>
+                                                <td>{{ key }}</td>
+                                                <td>{{ data.get('created', 'Unknown') }}</td>
+                                                <td>{{ data.get('last_used', 'Never') }}</td>
+                                                <td>{{ data.get('count', 0) }}</td>
+                                                <td>{{ max_apk - data.get('count', 0) }}</td>
+                                                <td>
+                                                    {% if data.get('count', 0) >= max_apk %}
+                                                        <span class="badge bg-danger">Expired</span>
+                                                    {% else %}
+                                                        <span class="badge bg-success">Active</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Activity Log Tab -->
+                    <div class="tab-pane" id="activity">
+                        <h2 class="mb-4">Activity Log</h2>
+                        <div class="card">
+                            <div class="card-body activity-log">
+                                <ul class="list-group list-group-flush">
+                                    {% for entry in activity %}
+                                    <li class="list-group-item">{{ entry }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add License Modal -->
+    <div class="modal fade" id="addLicenseModal" tabindex="-1" aria-labelledby="addLicenseModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addLicenseModalLabel">Add New License</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addLicenseForm">
+                        <div class="mb-3">
+                            <label for="licenseKey" class="form-label">License Key</label>
+                            <input type="text" class="form-control" id="licenseKey" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="submitLicense">Add License</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Handle license submission
+            $('#submitLicense').click(function() {
+                const licenseKey = $('#licenseKey').val();
+                
+                $.post('{{ url_for("admin_add_license") }}', {
+                    license_key: licenseKey
+                }, function(response) {
+                    if (response.status === 'success') {
+                        alert('License added successfully!');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + response.message);
+                    }
+                }).fail(function() {
+                    alert('Error submitting license');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

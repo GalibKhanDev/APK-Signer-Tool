@@ -1,0 +1,22 @@
+{
+  "keys": {
+    "admin": {
+      "count": 1,
+      "created": "2023-01-01",
+      "last_used": "2025-05-15 18:17:10"
+    },
+    "admin000": {
+      "count": 5,
+      "created": "2023-01-15"
+    },
+    "YLYK-44XS-AYNP-LID6": {
+      "count": 4,
+      "created": "2025-05-15 15:22:13",
+      "last_used": "2026-05-10 18:22:46"
+    },
+    "UNRO-FDTP-W8RT-1VAA": {
+      "count": 0,
+      "created": "2025-05-15 15:22:13"
+    }
+  }
+}
